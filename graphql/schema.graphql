@@ -1,0 +1,314 @@
+type CarBrand {
+  id: ID!
+  name: String!
+  status: String!
+}
+
+type CarModel {
+  id: ID!
+  name: String!
+  brand: CarBrand!
+}
+
+type CarImage {
+  id: ID!
+  s3_url: String!
+  is_primary: Boolean!
+}
+
+type CarPrice {
+  id: ID!
+  price: Float!
+  currency: String!
+  valid_from: String!
+  valid_to: String
+  status: String!
+}
+
+type CarDetail {
+  engine: String!
+  transmission: String!
+  fuel_type: String!
+  color: String!
+  seat_capacity: Int!
+  mileage: Int!
+  description: String
+}
+
+type Car {
+  id: ID!
+  model: CarModel!
+  year: Int!
+  status: String!
+  detail: CarDetail
+  prices: [CarPrice!]!
+  images: [CarImage!]!
+  createdTime: String!
+}
+
+type BikeBrand {
+  id: ID!
+  name: String!
+  status: String!
+}
+
+type BikeModel {
+  id: ID!
+  name: String!
+  brand: BikeBrand!
+}
+
+type BikeImage {
+  id: ID!
+  s3_url: String!
+  is_primary: Boolean!
+}
+
+type BikePrice {
+  id: ID!
+  price: Float!
+  currency: String!
+  valid_from: String!
+  valid_to: String
+  status: String!
+}
+
+type BikeDetail {
+  engine: String!
+  transmission: String!
+  fuel_type: String!
+  color: String!
+  seat_capacity: Int!
+  mileage: Int!
+  description: String
+}
+
+type Bike {
+  id: ID!
+  model: BikeModel!
+  year: Int!
+  status: String!
+  detail: BikeDetail
+  prices: [BikePrice!]!
+  images: [BikeImage!]!
+  createdTime: String!
+}
+
+type MotoBrand {
+  id: ID!
+  name: String!
+  status: String!
+}
+
+type MotoModel {
+  id: ID!
+  name: String!
+  brand: MotoBrand!
+}
+
+type MotoImage {
+  id: ID!
+  s3_url: String!
+  is_primary: Boolean!
+}
+
+type MotoPrice {
+  id: ID!
+  price: Float!
+  currency: String!
+  valid_from: String!
+  valid_to: String
+  status: String!
+}
+
+type MotoDetail {
+  engine: String!
+  transmission: String!
+  fuel_type: String!
+  color: String!
+  seat_capacity: Int!
+  mileage: Int!
+  description: String
+}
+
+type Moto {
+  id: ID!
+  model: MotoModel!
+  year: Int!
+  status: String!
+  detail: MotoDetail
+  prices: [MotoPrice!]!
+  images: [MotoImage!]!
+  createdTime: String!
+}
+
+type Customer {
+  id: ID!
+  name: String!
+  phone: String!
+  email: String
+  address: String
+  status: String!
+}
+
+type OrderItem {
+  id: ID!
+  car: Car!
+  price: Float!
+}
+
+type OrderService {
+  id: ID!
+  service_id: String!
+  price: Float!
+}
+
+type Shipping {
+  id: ID!
+  delivery_address: String!
+  fee: Float!
+  status: String!
+  method_id: String!
+}
+
+type Payment {
+  id: ID!
+  provider: String!
+  amount: Float!
+  status: String!
+  transaction_id: String
+}
+
+type Order {
+  id: ID!
+  customer: Customer!
+  status: String!
+  items: [OrderItem!]!
+  services: [OrderService!]!
+  total_amount: Float!
+  service_fee: Float!
+  shipping_fee: Float!
+  grand_total: Float!
+  currency: String!
+  payment: Payment
+  shipping: Shipping
+  createdTime: String!
+}
+
+type Service {
+  id: ID!
+  name: String!
+  description: String
+  base_price: Float!
+  currency: String!
+  status: String!
+}
+
+type ShippingMethod {
+  id: ID!
+  name: String!
+  description: String
+  base_fee: Float!
+  currency: String!
+  status: String!
+}
+
+type Query {
+  # Car Queries
+  cars(limit: Int, offset: Int): [Car!]!
+  car(id: ID!): Car
+  carBrands: [CarBrand!]!
+  carModels(brandId: ID!): [CarModel!]!
+
+  # Bike Queries
+  bikes(limit: Int, offset: Int): [Bike!]!
+  bike(id: ID!): Bike
+  bikeBrands: [BikeBrand!]!
+  bikeModels(brandId: ID!): [BikeModel!]!
+
+  # Moto Queries
+  motos(limit: Int, offset: Int): [Moto!]!
+  moto(id: ID!): Moto
+  motoBrands: [MotoBrand!]!
+  motoModels(brandId: ID!): [MotoModel!]!
+
+  # Order Queries
+  orders(limit: Int, offset: Int): [Order!]!
+  order(id: ID!): Order
+  customerOrders(customerId: ID!): [Order!]!
+
+  # Customer Queries
+  customers(limit: Int, offset: Int): [Customer!]!
+  customer(id: ID!): Customer
+
+  # Service & Shipping
+  services: [Service!]!
+  shippingMethods: [ShippingMethod!]!
+}
+
+type Mutation {
+  # Car Mutations
+  createCar(modelId: ID!, year: Int!, detail: CarDetailInput!): Car!
+  updateCarPrice(carId: ID!, price: Float!): CarPrice!
+  updateCarStatus(carId: ID!, status: String!): Car!
+
+  # Bike Mutations
+  createBike(modelId: ID!, year: Int!, detail: BikeDetailInput!): Bike!
+  updateBikePrice(bikeId: ID!, price: Float!): BikePrice!
+  updateBikeStatus(bikeId: ID!, status: String!): Bike!
+
+  # Moto Mutations
+  createMoto(modelId: ID!, year: Int!, detail: MotoDetailInput!): Moto!
+  updateMotoPrice(motoId: ID!, price: Float!): MotoPrice!
+  updateMotoStatus(motoId: ID!, status: String!): Moto!
+
+  # Order Mutations
+  createOrder(customerId: ID!, items: [OrderItemInput!]!): Order!
+  updateOrderStatus(orderId: ID!, status: String!): Order!
+  addOrderService(orderId: ID!, serviceId: ID!): Order!
+
+  # Customer Mutations
+  createCustomer(name: String!, phone: String!, email: String, address: String): Customer!
+  updateCustomer(id: ID!, name: String, phone: String, email: String, address: String): Customer!
+
+  # Payment Mutations
+  processPayment(orderId: ID!, provider: String!, amount: Float!): Payment!
+
+  # Shipping Mutations
+  updateShipping(orderId: ID!, deliveryAddress: String!, methodId: ID!): Shipping!
+}
+
+input CarDetailInput {
+  engine: String!
+  transmission: String!
+  fuel_type: String!
+  color: String!
+  seat_capacity: Int!
+  mileage: Int!
+  description: String
+}
+
+input BikeDetailInput {
+  engine: String!
+  transmission: String!
+  fuel_type: String!
+  color: String!
+  seat_capacity: Int!
+  mileage: Int!
+  description: String
+}
+
+input MotoDetailInput {
+  engine: String!
+  transmission: String!
+  fuel_type: String!
+  color: String!
+  seat_capacity: Int!
+  mileage: Int!
+  description: String
+}
+
+input OrderItemInput {
+  carId: ID!
+  price: Float!
+}
