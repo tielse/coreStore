@@ -9,6 +9,60 @@ async function main() {
   const dbs = await prisma.$queryRaw`SELECT 1`;
   console.log('✅ DB connected:', dbs);
 
+  await prisma.$transaction([
+    // SYSTEM / IAM
+  prisma.sys_user_session.deleteMany(),
+  prisma.sys_user_group.deleteMany(),
+  prisma.sys_group.deleteMany(),
+  prisma.sys_user.deleteMany(),
+
+  // ORDER
+  prisma.ord_payment.deleteMany(),
+  prisma.ord_return.deleteMany(),
+  prisma.ord_shipping.deleteMany(),
+  prisma.ord_order_service.deleteMany(),
+  prisma.ord_order_item.deleteMany(),
+  prisma.ord_order.deleteMany(),
+  prisma.ord_customer.deleteMany(),
+
+  // CAR
+  prisma.cm_car_price.deleteMany(),
+  prisma.cm_car_image.deleteMany(),
+  prisma.cm_car_detail.deleteMany(),
+  prisma.cm_car.deleteMany(),
+  prisma.cm_car_model.deleteMany(),
+  prisma.cm_car_brand.deleteMany(),
+
+  // BIKE
+  prisma.cm_bike_price.deleteMany(),
+  prisma.cm_bike_image.deleteMany(),
+  prisma.cm_bike_detail.deleteMany(),
+  prisma.cm_bike.deleteMany(),
+  prisma.cm_bike_model.deleteMany(),
+  prisma.cm_bike_brand.deleteMany(),
+
+  // MOTO
+  prisma.cm_moto_price.deleteMany(),
+  prisma.cm_moto_image.deleteMany(),
+  prisma.cm_moto_detail.deleteMany(),
+  prisma.cm_moto.deleteMany(),
+  prisma.cm_moto_model.deleteMany(),
+  prisma.cm_moto_brand.deleteMany(),
+
+  // SERVICE & SHIPPING
+  prisma.cm_service.deleteMany(),
+  prisma.cm_shipping_method.deleteMany(),
+
+  // REVIEW & INVENTORY
+  prisma.cm_review.deleteMany(),
+  prisma.cm_inventory.deleteMany(),
+
+  // EVENT
+  prisma.sys_event_log.deleteMany(),
+
+  ]);
+  console.log('🧹 Cleaned existing data');
+
   // ======================================================
   // SYSTEM / IAM
   // ======================================================
@@ -49,6 +103,37 @@ async function main() {
     data: [
       { user_id: 'u_admin', group_id: 'ADMIN', created_by: CREATED_BY },
       { user_id: 'u_staff', group_id: 'STAFF', created_by: CREATED_BY },
+    ],
+    skipDuplicates: true,
+  });
+
+  // ======================================================
+  // USER SESSION
+  // ======================================================
+  await prisma.sys_user_session.createMany({
+    data: [
+      {
+        id: 'SES_ADMIN_001',
+        user_id: 'u_admin',
+        session_id: 'kc_session_admin_1',
+        refresh_token_hash: 'hash_refresh_token_admin_1',
+        ip_address: '127.0.0.1',
+        user_agent: 'Chrome / MacOS',
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // +7 ngày
+        revoked: false,
+        created_by: CREATED_BY,
+      },
+      {
+        id: 'SES_STAFF_001',
+        user_id: 'u_staff',
+        session_id: 'kc_session_staff_1',
+        refresh_token_hash: 'hash_refresh_token_staff_1',
+        ip_address: '127.0.0.1',
+        user_agent: 'Firefox / Windows',
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        revoked: false,
+        created_by: CREATED_BY,
+      },
     ],
     skipDuplicates: true,
   });

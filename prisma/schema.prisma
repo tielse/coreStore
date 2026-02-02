@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
@@ -12,149 +12,172 @@ datasource db {
 // SYSTEM / IAM (KEYCLOAK INTEGRATION)
 //////////////////////////////////////////////////
 model sys_user {
-  id String @id
-  keycloak_user_id String @unique
-  username String
-  email String?
-  full_name String?
-  phone String?
-  avatar_url String?
-  status String @default("ACTIVE") // ACTIVE, INACTIVE, BLOCKED
+  id               String  @id
+  keycloak_user_id String  @unique
+  username         String
+  email            String?
+  full_name        String?
+  phone            String?
+  avatar_url       String?
+  status           String  @default("ACTIVE") // ACTIVE, INACTIVE, BLOCKED
 
   groups sys_user_group[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
+
+  sessions sys_user_session[]
 }
 
 model sys_group {
-  id String @id // ADMIN, STAFF, SALE
-  name String
+  id          String  @id // ADMIN, STAFF, SALE
+  name        String
   description String?
-  status String @default("ACTIVE")
+  status      String  @default("ACTIVE")
 
   users sys_user_group[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 }
 
 model sys_user_group {
-  user_id String
+  user_id  String
   group_id String
 
-  user sys_user @relation(fields: [user_id], references: [id])
+  user  sys_user  @relation(fields: [user_id], references: [id])
   group sys_group @relation(fields: [group_id], references: [id])
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   @@id([user_id, group_id])
+}
+
+model sys_user_session {
+  id                 String   @id
+  user_id            String
+  session_id         String   @unique
+  refresh_token_hash String
+  ip_address         String?
+  user_agent         String?
+  expires_at         DateTime
+  revoked            Boolean  @default(false)
+
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
+  modified_time DateTime @updatedAt
+
+  user sys_user @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([session_id])
 }
 
 //////////////////////////////////////////////////
 // CATALOG – CAR
 //////////////////////////////////////////////////
 model cm_car_brand {
-  id String @id
-  name String
+  id     String @id
+  name   String
   status String @default("ACTIVE")
 
   models cm_car_model[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 }
 
 model cm_car_model {
-  id String @id
-  name String
+  id       String @id
+  name     String
   brand_id String
-  status String @default("ACTIVE")
+  status   String @default("ACTIVE")
 
   brand cm_car_brand @relation(fields: [brand_id], references: [id])
-  cars cm_car[]
+  cars  cm_car[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   @@index([brand_id])
 }
 
 model cm_car {
-  id String @id
+  id       String @id
   model_id String
-  year Int
-  status String @default("AVAILABLE") // AVAILABLE, RESERVED, SOLD
+  year     Int
+  status   String @default("AVAILABLE") // AVAILABLE, RESERVED, SOLD
 
-  model cm_car_model @relation(fields: [model_id], references: [id])
-  detail cm_car_detail?
-  prices cm_price[]
-  images cm_car_image[]
+  model      cm_car_model     @relation(fields: [model_id], references: [id])
+  detail     cm_car_detail?
+  prices     cm_car_price[]
+  images     cm_car_image[]
   orderItems ord_order_item[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   @@index([model_id])
 }
 
 model cm_car_detail {
-  car_id String @id
-  engine String
-  transmission String
-  fuel_type String
-  color String
+  car_id        String  @id
+  engine        String
+  transmission  String
+  fuel_type     String
+  color         String
   seat_capacity Int
-  mileage Int
-  description String?
+  mileage       Int
+  description   String?
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   car cm_car @relation(fields: [car_id], references: [id])
 }
 
 model cm_car_image {
-  id String @id
-  car_id String
-  s3_url String
+  id         String  @id
+  car_id     String
+  s3_url     String
   is_primary Boolean @default(false)
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   car cm_car @relation(fields: [car_id], references: [id])
 }
 
-model cm_price {
-  id String @id
-  car_id String
-  price Decimal
-  currency String
+model cm_car_price {
+  id         String    @id
+  car_id     String
+  price      Decimal
+  currency   String
   valid_from DateTime
-  valid_to DateTime?
-  status String @default("ACTIVE")
+  valid_to   DateTime?
+  status     String    @default("ACTIVE")
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   car cm_car @relation(fields: [car_id], references: [id])
@@ -164,98 +187,98 @@ model cm_price {
 // CATALOG – BIKE
 //////////////////////////////////////////////////
 model cm_bike_brand {
-  id String @id
-  name String
+  id     String @id
+  name   String
   status String @default("ACTIVE")
 
   models cm_bike_model[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 }
 
 model cm_bike_model {
-  id String @id
-  name String
+  id       String @id
+  name     String
   brand_id String
-  status String @default("ACTIVE")
+  status   String @default("ACTIVE")
 
   brand cm_bike_brand @relation(fields: [brand_id], references: [id])
   bikes cm_bike[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   @@index([brand_id])
 }
 
 model cm_bike {
-  id String @id
+  id       String @id
   model_id String
-  year Int
-  status String @default("AVAILABLE") // AVAILABLE, RESERVED, SOLD
+  year     Int
+  status   String @default("AVAILABLE") // AVAILABLE, RESERVED, SOLD
 
-  model cm_bike_model @relation(fields: [model_id], references: [id])
+  model  cm_bike_model   @relation(fields: [model_id], references: [id])
   detail cm_bike_detail?
   prices cm_bike_price[]
   images cm_bike_image[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   @@index([model_id])
 }
 
 model cm_bike_detail {
-  bike_id String @id
-  engine String
-  transmission String
-  fuel_type String
-  color String
+  bike_id       String  @id
+  engine        String
+  transmission  String
+  fuel_type     String
+  color         String
   seat_capacity Int
-  mileage Int
-  description String?
+  mileage       Int
+  description   String?
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   bike cm_bike @relation(fields: [bike_id], references: [id])
 }
 
 model cm_bike_image {
-  id String @id
-  bike_id String
-  s3_url String
+  id         String  @id
+  bike_id    String
+  s3_url     String
   is_primary Boolean @default(false)
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   bike cm_bike @relation(fields: [bike_id], references: [id])
 }
 
 model cm_bike_price {
-  id String @id
-  bike_id String
-  price Decimal
-  currency String
+  id         String    @id
+  bike_id    String
+  price      Decimal
+  currency   String
   valid_from DateTime
-  valid_to DateTime?
-  status String @default("ACTIVE")
+  valid_to   DateTime?
+  status     String    @default("ACTIVE")
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   bike cm_bike @relation(fields: [bike_id], references: [id])
@@ -265,98 +288,98 @@ model cm_bike_price {
 // CATALOG – MOTO
 //////////////////////////////////////////////////
 model cm_moto_brand {
-  id String @id
-  name String
+  id     String @id
+  name   String
   status String @default("ACTIVE")
 
   models cm_moto_model[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 }
 
 model cm_moto_model {
-  id String @id
-  name String
+  id       String @id
+  name     String
   brand_id String
-  status String @default("ACTIVE")
+  status   String @default("ACTIVE")
 
   brand cm_moto_brand @relation(fields: [brand_id], references: [id])
   motos cm_moto[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   @@index([brand_id])
 }
 
 model cm_moto {
-  id String @id
+  id       String @id
   model_id String
-  year Int
-  status String @default("AVAILABLE") // AVAILABLE, RESERVED, SOLD
+  year     Int
+  status   String @default("AVAILABLE") // AVAILABLE, RESERVED, SOLD
 
-  model cm_moto_model @relation(fields: [model_id], references: [id])
+  model  cm_moto_model   @relation(fields: [model_id], references: [id])
   detail cm_moto_detail?
   prices cm_moto_price[]
   images cm_moto_image[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   @@index([model_id])
 }
 
 model cm_moto_detail {
-  moto_id String @id
-  engine String
-  transmission String
-  fuel_type String
-  color String
+  moto_id       String  @id
+  engine        String
+  transmission  String
+  fuel_type     String
+  color         String
   seat_capacity Int
-  mileage Int
-  description String?
+  mileage       Int
+  description   String?
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   moto cm_moto @relation(fields: [moto_id], references: [id])
 }
 
 model cm_moto_image {
-  id String @id
-  moto_id String
-  s3_url String
+  id         String  @id
+  moto_id    String
+  s3_url     String
   is_primary Boolean @default(false)
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   moto cm_moto @relation(fields: [moto_id], references: [id])
 }
 
 model cm_moto_price {
-  id String @id
-  moto_id String
-  price Decimal
-  currency String
+  id         String    @id
+  moto_id    String
+  price      Decimal
+  currency   String
   valid_from DateTime
-  valid_to DateTime?
-  status String @default("ACTIVE")
+  valid_to   DateTime?
+  status     String    @default("ACTIVE")
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   moto cm_moto @relation(fields: [moto_id], references: [id])
@@ -366,34 +389,34 @@ model cm_moto_price {
 // SERVICE & SHIPPING
 //////////////////////////////////////////////////
 model cm_service {
-  id String @id
-  name String
+  id          String  @id
+  name        String
   description String?
-  base_price Decimal
-  currency String
-  status String @default("ACTIVE")
+  base_price  Decimal
+  currency    String
+  status      String  @default("ACTIVE")
 
   orderServices ord_order_service[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 }
 
 model cm_shipping_method {
-  id String @id
-  name String
+  id          String  @id
+  name        String
   description String?
-  base_fee Decimal
-  currency String
-  status String @default("ACTIVE")
+  base_fee    Decimal
+  currency    String
+  status      String  @default("ACTIVE")
 
   shippings ord_shipping[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 }
 
@@ -401,90 +424,90 @@ model cm_shipping_method {
 // ORDER / PAYMENT
 //////////////////////////////////////////////////
 model ord_customer {
-  id String @id
-  name String
-  phone String
-  email String?
+  id      String  @id
+  name    String
+  phone   String
+  email   String?
   address String?
-  status String @default("ACTIVE")
+  status  String  @default("ACTIVE")
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   orders ord_order[]
 }
 
 model ord_order {
-  id String @id
-  customer_id String
-  status String @default("NEW") // NEW, PAID, COMPLETED
+  id           String  @id
+  customer_id  String
+  status       String  @default("NEW") // NEW, PAID, COMPLETED
   total_amount Decimal
-  service_fee Decimal @default(0)
+  service_fee  Decimal @default(0)
   shipping_fee Decimal @default(0)
-  grand_total Decimal
-  currency String
+  grand_total  Decimal
+  currency     String
 
-  customer ord_customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
-  items ord_order_item[]
-  services ord_order_service[]
-  payment ord_payment?
+  customer  ord_customer        @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  items     ord_order_item[]
+  services  ord_order_service[]
+  payment   ord_payment?
   shippings ord_shipping[]
-  returns ord_return[]
+  returns   ord_return[]
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   @@index([customer_id])
 }
 
 model ord_order_item {
-  id String @id
+  id       String  @id
   order_id String
-  car_id String
-  price Decimal
+  car_id   String
+  price    Decimal
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   order ord_order @relation(fields: [order_id], references: [id])
-  car cm_car @relation(fields: [car_id], references: [id])
+  car   cm_car    @relation(fields: [car_id], references: [id])
 }
 
 model ord_order_service {
-  id String @id
-  order_id String
+  id         String  @id
+  order_id   String
   service_id String
-  price Decimal
+  price      Decimal
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
-  order ord_order @relation(fields: [order_id], references: [id])
+  order   ord_order  @relation(fields: [order_id], references: [id])
   service cm_service @relation(fields: [service_id], references: [id])
 }
 
 model ord_shipping {
-  id String @id
-  order_id String
+  id                 String  @id
+  order_id           String
   shipping_method_id String
-  delivery_address String
-  fee Decimal
-  status String @default("PENDING")
+  delivery_address   String
+  fee                Decimal
+  status             String  @default("PENDING")
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
-  order ord_order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  order  ord_order          @relation(fields: [order_id], references: [id], onDelete: Cascade)
   method cm_shipping_method @relation(fields: [shipping_method_id], references: [id])
 
   @@index([order_id])
@@ -492,32 +515,32 @@ model ord_shipping {
 }
 
 model ord_payment {
-  id String @id
-  order_id String @unique
-  provider String
-  amount Decimal
-  status String @default("PENDING")
+  id             String  @id
+  order_id       String  @unique
+  provider       String
+  amount         Decimal
+  status         String  @default("PENDING")
   transaction_id String?
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
-  
+
   order ord_order @relation(fields: [order_id], references: [id], onDelete: Cascade)
 }
 
 model ord_return {
-  id String @id
-  order_id String
-  reason String
-  status String @default("REQUESTED") // REQUESTED, APPROVED, REJECTED, COMPLETED
+  id            String  @id
+  order_id      String
+  reason        String
+  status        String  @default("REQUESTED") // REQUESTED, APPROVED, REJECTED, COMPLETED
   refund_amount Decimal
-  currency String
+  currency      String
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   order ord_order @relation(fields: [order_id], references: [id], onDelete: Cascade)
@@ -527,33 +550,33 @@ model ord_return {
 // REVIEWS & INVENTORY
 //////////////////////////////////////////////////
 model cm_review {
-  id String @id
+  id           String  @id
   product_type String // CAR, MOTO, BIKE
-  product_id String
-  customer_id String
-  rating Int // 1-5
-  title String?
-  content String?
-  status String @default("PENDING") // PENDING, APPROVED, REJECTED
+  product_id   String
+  customer_id  String
+  rating       Int // 1-5
+  title        String?
+  content      String?
+  status       String  @default("PENDING") // PENDING, APPROVED, REJECTED
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 }
 
 model cm_inventory {
-  id String @id
-  product_type String // CAR, MOTO, BIKE
-  product_id String
-  quantity_total Int
-  quantity_reserved Int
+  id                 String  @id
+  product_type       String // CAR, MOTO, BIKE
+  product_id         String
+  quantity_total     Int
+  quantity_reserved  Int
   quantity_available Int
-  location String?
+  location           String?
 
-  created_by String
-  created_time DateTime @default(now())
-  modified_by String?
+  created_by    String
+  created_time  DateTime @default(now())
+  modified_by   String?
   modified_time DateTime @updatedAt
 
   @@unique([product_type, product_id])
@@ -564,9 +587,9 @@ model cm_inventory {
 //////////////////////////////////////////////////
 
 model sys_event_log {
-  id String @id
-  topic String
-  payload Json
-  status String @default("NEW")
-  retry_count Int @default(0)
+  id          String @id
+  topic       String
+  payload     Json
+  status      String @default("NEW")
+  retry_count Int    @default(0)
 }

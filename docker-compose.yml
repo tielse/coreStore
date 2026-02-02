@@ -22,10 +22,12 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: keycloak
+      KC_DB_URL: jdbc:postgresql://postgres:5432/SupTEST
+      KC_DB_USERNAME: testlab
+      KC_DB_PASSWORD: testlab123
+      KC_DB_SCHEMA: keycloak
     ports:
       - "8080:8080"
     depends_on:
@@ -58,8 +60,9 @@ services:
       - "9092:9092"
 
   kafka-ui:
-    image: provectuslabs/kafka-ui
+    image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
+    restart: unless-stopped
     ports:
       - "8081:8080"
     environment:

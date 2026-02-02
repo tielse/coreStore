@@ -1,13 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
 import { AppModule } from './app.module';
-import {
-  ResponseInterceptor,
-  GlobalExceptionFilter,
-  ResponseBuilder,
-} from './shared/response';
+import { AppValidationPipe } from './shared/pipe/validation.pipe';
+import { HttpExceptionFilter } from './shared/exception/http-exception.filter';
+import { HttpResponseInterceptor } from './shared/response/http-response.interceptor';
 
 function parseCorsOrigins(): string[] {
   if (!process.env.CORS_ORIGIN) return [];
@@ -15,81 +13,53 @@ function parseCorsOrigins(): string[] {
 }
 
 async function bootstrap() {
+  console.log('BOOTSTRAP START');
+
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
 
-  // ✅ Security
+  // 1️⃣ Security
   app.use(helmet());
 
-  // ✅ Validation
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
+  // 2️⃣ Validation
+  app.useGlobalPipes(new AppValidationPipe());
 
-  // ✅ CORS
+  // 3️⃣ Filters & Interceptors
+  app.useGlobalFilters(app.get(HttpExceptionFilter));
+  app.useGlobalInterceptors(app.get(HttpResponseInterceptor));
+
+  // 4️⃣ CORS
   app.enableCors({
     origin: parseCorsOrigins(),
     credentials: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   });
 
-  // ✅ Global prefix
+  // 5️⃣ Global prefix
   app.setGlobalPrefix('api');
 
-  // ✅ Swagger with OAuth2 Keycloak
+  // 6️⃣ Swagger (⚠️ KHÔNG TRÙNG PREFIX)
   const config = new DocumentBuilder()
     .setTitle('Store Platform API')
-    .setDescription('The Platform API - Car/Bike/Moto Sales System')
     .setVersion('1.0')
-    .setContact('LCTNOV', 'https://github.com/lctnov', 'chauthoi1211@gmail.com')
-    .setLicense('MIT', 'https://opensource.org/licenses/MIT')
     .addBearerAuth(
       {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        description: 'Keycloak JWT Token',
+        in: 'header',
       },
-      'JWT',
-    )
-    .addOAuth2(
-      {
-        type: 'oauth2',
-        flows: {
-          implicit: {
-            authorizationUrl: `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/auth`,
-            scopes: {
-              'openid profile email': 'OpenID Connect Profile',
-              'roles:view': 'View roles',
-              'roles:manage': 'Manage roles',
-            },
-          },
-        },
-      },
-      'OAuth2',
+      'access-token',
     )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(process.env.SWAGGER_PATH || 'api/docs', app, document);
+  SwaggerModule.setup('swagger', app, document);
 
-  // ✅ Global Response Interceptor & Exception Filter (SOLID: Single Responsibility)
-  const responseBuilder = new ResponseBuilder();
-  app.useGlobalInterceptors(new ResponseInterceptor(responseBuilder));
-  app.useGlobalFilters(new GlobalExceptionFilter());
-
-  // ✅ Graceful shutdown (Kafka / Prisma / Redis)
+  // 7️⃣ Shutdown
   app.enableShutdownHooks();
 
-  const port = Number(process.env.PORT) || 6666;
-  await app.listen(port);
-
-  console.log(`🚀 API running on http://localhost:${port}/api`);
+  await app.listen(1211);
 }
 
 void bootstrap();

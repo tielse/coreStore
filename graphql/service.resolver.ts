@@ -1,5 +1,5 @@
 import { Resolver, Query } from '@nestjs/graphql';
-import { PrismaService } from '../infrastructure/prisma.service';
+import { PrismaService } from '../src/modules/prisma/prisma.service';
 
 @Resolver('Service')
 export class ServiceResolver {

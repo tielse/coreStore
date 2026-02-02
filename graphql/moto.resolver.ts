@@ -1,5 +1,5 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
-import { PrismaService } from '../src/infrastructure/prisma.service';
+import { PrismaService } from '../src/modules/prisma/prisma.service';
 
 @Resolver('Moto')
 export class MotoResolver {

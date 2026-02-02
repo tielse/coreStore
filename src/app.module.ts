@@ -1,32 +1,29 @@
+// app.module.ts
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-import { AuthContextMiddleware } from './infrastructure/middleware/auth-context.middleware';
-import { PrismaModule } from './infrastructure/prisma.module';
+// Shared
+import { AuthContextMiddleware } from './shared/middleware/auth-context.middleware';
+import { ResponseModule } from './shared/response/response.module';
 
-import { AuthController } from './interfaces/rest/auth.controller';
-import { AdminController } from './interfaces/rest/admin.controller';
+// Infrastructure
+import { KafkaService } from './shared/infrastructure/kafka/kafka.service';
+import { RedisService } from './shared/infrastructure/redis/redis.service';
 
-import { KafkaService } from './infrastructure/kafka/kafka.service';
-import { RedisService } from './infrastructure/redis/redis.service';
+// Core modules
+import { PrismaModule } from './modules/prisma/prisma.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/users/user.module';
 
-import {
-  AuthEventService,
-  SessionService,
-  EventPublisherService,
-} from './application/auth/auth-event.service';
-
-import { TokenVerifierService } from './infrastructure/auth/token-verifier.service';
-import { KeycloakAuthGuard } from './infrastructure/auth/keycloak.guard';
-import { RolesGuard } from './infrastructure/auth/roles.guard';
-
-// GraphQL modules (đề xuất tách module riêng sau)
-import { CarResolver } from '../graphql/car.resolver';
-import { BikeResolver } from '../graphql/bike.resolver';
-import { MotoResolver } from '../graphql/moto.resolver';
+// GraphQL demo resolvers
+// import { CarResolver } from '../graphql/car.resolver';
+// import { BikeResolver } from '../graphql/bike.resolver';
+// import { MotoResolver } from '../graphql/moto.resolver';
+import { GraphqlModule } from './modules/auth/interfaces/graphql/graphql.module';
 
 @Module({
   imports: [
@@ -34,31 +31,26 @@ import { MotoResolver } from '../graphql/moto.resolver';
       isGlobal: true,
       envFilePath: '.env',
     }),
-
+    HttpModule,
     PrismaModule,
+    ResponseModule,
+
+    AuthModule,
+    UserModule,
+    GraphqlModule,
   ],
-  controllers: [AppController, AuthController, AdminController],
+  controllers: [AppController],
   providers: [
     AppService,
 
-    // Infrastructure
+    // ===== Shared Infrastructure =====
     KafkaService,
     RedisService,
 
-    // Auth / Event
-    TokenVerifierService,
-    SessionService,
-    EventPublisherService,
-    AuthEventService,
-
-    // Guards
-    KeycloakAuthGuard,
-    RolesGuard,
-
-    // GraphQL (nên tách module sau)
-    CarResolver,
-    BikeResolver,
-    MotoResolver,
+    // ===== GraphQL demo =====
+    // CarResolver,
+    // BikeResolver,
+    // MotoResolver,
   ],
 })
 export class AppModule implements NestModule {
