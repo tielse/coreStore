@@ -1,12 +1,36 @@
-export type AuthAction = 'LOGIN' | 'LOGOUT' | 'TOKEN_REFRESH';
+/* ========= Auth actions ========= */
+export enum AuthAction {
+  LOGIN = 'LOGIN',
+  LOGOUT = 'LOGOUT',
+  TOKEN_REFRESH = 'TOKEN_REFRESH',
+}
 
-export interface AuthEventCommand {
+/* ========= Base ========= */
+export interface BaseAuthEventCommand {
   userId: string;
-  username: string;
-  email?: string;
   sessionId: string;
-  expiresAt: Date;
-  action: 'LOGIN' | 'TOKEN_REFRESH';
   ipAddress?: string;
   userAgent?: string;
+}
+
+/* ========= Login ========= */
+export interface LoginEventCommand extends BaseAuthEventCommand {
+  action: AuthAction.LOGIN;
+  username: string;
+  email?: string;
+  expiresAt: Date;
+}
+
+/* ========= Token refresh ========= */
+export interface TokenRefreshEventCommand extends BaseAuthEventCommand {
+  action: AuthAction.TOKEN_REFRESH;
+  expiresAt: Date;
+}
+
+/* ========= Logout ========= */
+export interface LogoutEventCommand {
+  action: AuthAction.LOGOUT;
+  userId: string;
+  sessionId?: string;
+  logoutAll?: boolean;
 }

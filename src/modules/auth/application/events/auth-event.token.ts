@@ -1,1 +1,0 @@
-export const AUTH_EVENT_SERVICE = Symbol('AUTH_EVENT_SERVICE');

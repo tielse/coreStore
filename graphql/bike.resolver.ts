@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { PrismaService } from '../src/modules/prisma/prisma.service';
-
+import { now } from '../src/shared/utils/time.util';
 @Resolver('Bike')
 export class BikeResolver {
   constructor(private prisma: PrismaService) {}
@@ -60,11 +60,11 @@ export class BikeResolver {
   ) {
     return this.prisma.cm_bike_price.create({
       data: {
-        id: `bike-price-${Date.now()}`,
+        id: `bike-price-${now().getTime()}`,
         bike_id: bikeId,
         price: price,
         currency: 'VND',
-        valid_from: new Date(),
+        valid_from: now(),
         created_by: 'system',
       },
     });

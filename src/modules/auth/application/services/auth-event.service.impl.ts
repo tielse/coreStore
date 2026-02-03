@@ -1,68 +1,50 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { KafkaAuthEventPublisher } from '../../infrastructure/event/kafka-auth-event.publisher';
-import type { SessionRepository } from '../ports/auth-session.repository';
-import { SESSION_REPOSITORY } from '../ports/auth-session.repository';
-import type { AuthEventService } from './auth-event.service';
-import { AuthEventCommand } from './auth-event.command';
-
+import {
+  AuthAction,
+  LoginEventCommand,
+  TokenRefreshEventCommand,
+  LogoutEventCommand,
+} from './auth-event.command';
+import { AuthEventService } from './auth-event.service';
+import { now } from '../../../../shared/utils/time.util';
 @Injectable()
 export class AuthEventServiceImpl implements AuthEventService {
-  constructor(
-    @Inject(SESSION_REPOSITORY)
-    private readonly sessionRepo: SessionRepository,
-    private readonly publisher: KafkaAuthEventPublisher,
-  ) {}
+  constructor(private readonly publisher: KafkaAuthEventPublisher) {}
 
-  async onLogin(command: AuthEventCommand): Promise<void> {
+  async publishLogin(command: LoginEventCommand): Promise<void> {
     await this.publisher.publish({
+      action: AuthAction.LOGIN,
       userId: command.userId,
       username: command.username,
       email: command.email,
       sessionId: command.sessionId,
-      action: 'LOGIN',
+      expiresAt: command.expiresAt,
       ipAddress: command.ipAddress,
       userAgent: command.userAgent,
-      timestamp: Date.now(),
+      timestamp: now().getTime(),
     });
+  }
 
-    await this.sessionRepo.create({
-      sessionId: command.sessionId,
+  async publishTokenRefresh(command: TokenRefreshEventCommand): Promise<void> {
+    await this.publisher.publish({
+      action: AuthAction.TOKEN_REFRESH,
       userId: command.userId,
+      sessionId: command.sessionId,
       expiresAt: command.expiresAt,
+      ipAddress: command.ipAddress,
+      userAgent: command.userAgent,
+      timestamp: now().getTime(),
     });
   }
 
-  async onTokenRefresh(command: AuthEventCommand): Promise<void> {
+  async publishLogout(command: LogoutEventCommand): Promise<void> {
     await this.publisher.publish({
-      userId: command.userId,
-      username: command.username,
-      sessionId: command.sessionId,
-      action: 'TOKEN_REFRESH',
-      timestamp: Date.now(),
-    });
-
-    await this.sessionRepo.refresh(command.sessionId, command.expiresAt);
-  }
-
-  async onLogout(command: {
-    userId: string;
-    sessionId?: string;
-    logoutAll?: boolean;
-  }): Promise<void> {
-    await this.publisher.publish({
+      action: AuthAction.LOGOUT,
       userId: command.userId,
       sessionId: command.sessionId,
-      action: 'LOGOUT',
-      timestamp: Date.now(),
+      logoutAll: command.logoutAll,
+      timestamp: now().getTime(),
     });
-
-    if (command.logoutAll) {
-      await this.sessionRepo.destroyAll(command.userId);
-      return;
-    }
-
-    if (command.sessionId) {
-      await this.sessionRepo.destroy(command.sessionId);
-    }
   }
 }

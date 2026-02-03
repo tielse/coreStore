@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RedisService } from 'src/shared/infrastructure/redis/redis.service';
-import type { SessionRepository } from '../../application/ports/auth-session.repository';
-
+import type { SessionRepository } from '../../application/ports/auth-session.interface';
+import { now } from 'src/shared/utils/time.util';
 export interface RedisSessionCreateInput {
   sessionId: string;
   userId: string;
@@ -92,6 +92,9 @@ export class RedisSessionService implements SessionRepository {
   }
 
   private calculateTtl(expiresAt: Date): number {
-    return Math.max(Math.floor((expiresAt.getTime() - Date.now()) / 1000), 0);
+    return Math.max(
+      Math.floor((expiresAt.getTime() - now().getTime()) / 1000),
+      0,
+    );
   }
 }

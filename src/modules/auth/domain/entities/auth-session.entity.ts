@@ -1,3 +1,5 @@
+import { now } from '../../../../shared/utils/time.util';
+
 export class AuthSession {
   constructor(
     public readonly sessionId: string,
@@ -11,6 +13,6 @@ export class AuthSession {
   }
 
   revoke() {
-    this.revokedAt = new Date();
+    this.revokedAt = now();
   }
 }

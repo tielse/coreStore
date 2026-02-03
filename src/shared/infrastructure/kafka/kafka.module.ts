@@ -3,11 +3,9 @@ import { KafkaService } from './kafka.service';
 import { KafkaAuthEventPublisher } from 'src/modules/auth/infrastructure/event/kafka-auth-event.publisher';
 
 @Module({
-  providers: [
-    KafkaService,
-    KafkaAuthEventPublisher,
-  ],
+  providers: [KafkaService, KafkaAuthEventPublisher],
   exports: [
+    KafkaService,
     KafkaAuthEventPublisher, // 👈 AuthModule cần cái này
   ],
 })

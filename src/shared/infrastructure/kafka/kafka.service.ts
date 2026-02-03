@@ -28,11 +28,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
   /**
    * Publish domain event (Auth, User, Payment...)
    */
-  async publishEvent<T>(
-    topic: string,
-    key: string,
-    payload: T,
-  ): Promise<void> {
+  async publishEvent<T>(topic: string, key: string, payload: T): Promise<void> {
     await this.producer.send({
       topic,
       messages: [
@@ -49,11 +45,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
   /**
    * Low-level produce (optional)
    */
-  async produce<T>(
-    topic: string,
-    message: T,
-    key?: string,
-  ): Promise<void> {
+  async produce<T>(topic: string, message: T, key?: string): Promise<void> {
     await this.publishEvent(topic, key ?? '', message);
   }
 

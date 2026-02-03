@@ -23,7 +23,7 @@ import { UserModule } from './modules/users/user.module';
 // import { CarResolver } from '../graphql/car.resolver';
 // import { BikeResolver } from '../graphql/bike.resolver';
 // import { MotoResolver } from '../graphql/moto.resolver';
-import { GraphqlModule } from './modules/auth/interfaces/graphql/graphql.module';
+import { GraphqlModule } from './modules/auth/presentation/graphql/graphql.module';
 
 @Module({
   imports: [

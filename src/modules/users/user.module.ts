@@ -72,9 +72,6 @@ import { AuthModule } from '../auth/auth.module';
     },
   ],
 
-  exports: [
-    GetUserUseCase,
-    ListUsersUseCase,
-  ],
+  exports: [GetUserUseCase, ListUsersUseCase],
 })
 export class UserModule {}

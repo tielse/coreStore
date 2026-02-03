@@ -30,7 +30,7 @@ import {
   IApiResponse,
 } from '../../../../shared/response/index.response';
 
-import { AuthGuard } from '../../../auth/interfaces/guards/auth-guard.service';
+import { AuthGuard } from '../../../auth/presentation/guards/auth-guard.service';
 
 @Controller('users')
 @UseGuards(AuthGuard)
