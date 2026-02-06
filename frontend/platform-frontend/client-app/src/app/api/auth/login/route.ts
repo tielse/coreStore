@@ -1,27 +1,26 @@
 import { NextResponse } from 'next/server'
-import { verifyPassword } from '@/lib/password'
-import { db } from '@/lib/db'
+import { gqlClient } from '@/libs/gql.client'
+
 
 export async function POST(req: Request) {
-  const { email, password } = await req.json()
+const body = await req.json()
 
-  const user = await db.sys_customer.findUnique({ where: { email } })
-  if (!user) {
-    return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 })
-  }
 
-  const isValid = await verifyPassword(password, user.password_hash)
-  if (!isValid) {
-    return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 })
-  }
+const { data } = await gqlClient.mutate({
+mutation: LOGIN_MUTATION,
+variables: { input: body },
+})
 
-  const response = NextResponse.json({ ok: true })
 
-  response.cookies.set('client_token', user.id, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: true,
-  })
+const res = NextResponse.json(data.login)
 
-  return response
+
+res.cookies.set('access_token', data.login.accessToken, {
+httpOnly: true,
+secure: true,
+path: '/',
+})
+
+
+return res
 }
